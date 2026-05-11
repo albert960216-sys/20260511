@@ -83,6 +83,10 @@ function draw() {
 
   // 繪製耳垂辨識結果
   if (predictions.length > 0) {
+    // 計算影像縮放比例：將辨識座標從攝影機原始大小轉換為畫布上的顯示大小
+    let scaleX = (width * 0.5) / capture.width;
+    let scaleY = (height * 0.5) / capture.height;
+
     for (let i = 0; i < predictions.length; i++) {
       let keypoints = predictions[i].scaledMesh;
       // 取得左右耳垂座標 (索引 147 為右耳垂, 376 為左耳垂)
@@ -96,25 +100,30 @@ function draw() {
       let leftSide = keypoints[234];
       let rightSide = keypoints[454];
 
-      let faceWidth = dist(leftSide[0], leftSide[1], rightSide[0], rightSide[1]) * 1.5;
-      let faceHeight = dist(topHead[0], topHead[1], bottomChin[0], bottomChin[1]) * 1.5;
-      let centerX = (leftSide[0] + rightSide[0]) / 2 - capture.width / 2;
-      let centerY = (topHead[1] + bottomChin[1]) / 2 - capture.height / 2;
+      // 將座標轉換到畫布顯示空間，並計算中心點與寬高
+      let faceWidth = dist(leftSide[0] * scaleX, leftSide[1] * scaleY, rightSide[0] * scaleX, rightSide[1] * scaleY) * 1.5;
+      let faceHeight = dist(topHead[0] * scaleX, topHead[1] * scaleY, bottomChin[0] * scaleX, bottomChin[1] * scaleY) * 1.5;
+      let centerX = ((leftSide[0] + rightSide[0]) / 2) * scaleX - (width * 0.5) / 2;
+      let centerY = ((topHead[1] + bottomChin[1]) / 2) * scaleY - (height * 0.5) / 2;
 
       // 繪製面具圖片
       image(maskImg, centerX, centerY, faceWidth, faceHeight);
 
+      // 轉換耳垂座標
+      let rx = rightEarlobe[0] * scaleX - (width * 0.5) / 2;
+      let ry = rightEarlobe[1] * scaleY - (height * 0.5) / 2;
+      let lx = leftEarlobe[0] * scaleX - (width * 0.5) / 2;
+      let ly = leftEarlobe[1] * scaleY - (height * 0.5) / 2;
+
       fill(255, 255, 0); // 黃色
       noStroke();
-      // 座標轉換：將相對於影像左上角的座標，轉換為相對於中心點的座標
-      ellipse(rightEarlobe[0] - capture.width / 2, rightEarlobe[1] - capture.height / 2, 15);
-      ellipse(leftEarlobe[0] - capture.width / 2, leftEarlobe[1] - capture.height / 2, 15);
+      ellipse(rx, ry, 15);
+      ellipse(lx, ly, 15);
 
       // 根據手勢選擇顯示對應的耳環圖片
       let currentEarring = earringImages[currentSelection];
-      // 設定寬高為 50 像素（可依需求調整圖片大小）
-      image(currentEarring, rightEarlobe[0] - capture.width / 2, rightEarlobe[1] - capture.height / 2, 50, 50);
-      image(currentEarring, leftEarlobe[0] - capture.width / 2, leftEarlobe[1] - capture.height / 2, 50, 50);
+      image(currentEarring, rx, ry, 50, 50);
+      image(currentEarring, lx, ly, 50, 50);
     }
   }
   pop();
