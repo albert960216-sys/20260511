@@ -17,7 +17,7 @@ function preload() {
     loadImage('pic/acc5_phoenix.png')
   ];
   // 載入面具圖片
-  maskImg = loadImage('mask/4379901.png');
+  maskImg = loadImage('mask/4379902.png');
 }
 
 function setup() {
